@@ -10,28 +10,32 @@
             text-align: center;
             vertical-align: middle;
             line-height: 100px;
-            font-size:300%;
+            font-size: 300%;
         }
     </style>
-
+    <div id="c" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">1</div>
     <script>
         var cells = [[], [], []];
+        var cellsTemp = [];
+        var table;
+        var cellElement;
+        var size = 3;
         function start() {
-            for (var i = 0; i < 3; i++) {
-                for (var j = 0; j < 3; j++) {
-                    cells[j].push(document.getElementById("c" + (i * 3 + j)));
-                }
-            }
+            cellElement = document.getElementById("c");
 
-            shuffle();
+            table = document.getElementById("table");
+
+            createBoard(size);
+
+            //shuffle();
         }
 
         function allowDrop(ev) {
-          ev.preventDefault();
+            ev.preventDefault();
         }
 
         function drag(ev) {
-          ev.dataTransfer.setData("text", ev.target.id);
+            ev.dataTransfer.setData("text", ev.target.id);
         }
 
         function drop(ev) {
@@ -40,8 +44,8 @@
 
             var id2 = ev.target.id;
             var id1 = data;
-            var coordinate1 = [id1.replace("c", "") % 3, Math.floor(id1.replace("c", "") / 3)];
-            var coordinate2 = [id2.replace("c", "") % 3, Math.floor(id2.replace("c", "") / 3)];
+            var coordinate1 = [id1.replace("c", "") % size, Math.floor(id1.replace("c", "") / size)];
+            var coordinate2 = [id2.replace("c", "") % size, Math.floor(id2.replace("c", "") / size)];
 
             if (Math.abs(coordinate1[0] - coordinate2[0]) == Math.abs(coordinate1[1] - coordinate2[1])) {
                 var dx = Math.sign(coordinate2[0] - coordinate1[0]);
@@ -49,43 +53,74 @@
                 var d = Math.abs(coordinate2[0] - coordinate1[0])
 
                 var temp = cells[coordinate1[0]][coordinate1[1]].innerHTML;
-                for (var i = 0; i < d * 4; i++) {
-                    var current = cells[(coordinate1[0] + dx * i + 15) % 3][(coordinate1[1] + dy * i + 15) % 3].innerHTML;
-                    cells[(coordinate1[0] + dx * i + 15) % 3][(coordinate1[1] + dy * i + 15) % 3].innerHTML = temp;
+                for (var i = 0; i < d * (size + 1); i++) {
+                    var current = cells[(coordinate1[0] + dx * i + size * size * 2) % size][(coordinate1[1] + dy * i + size * size * 2) % size].innerHTML;
+                    cells[(coordinate1[0] + dx * i + size * size * 2) % size][(coordinate1[1] + dy * i + size * size * 2) % size].innerHTML = temp;
                     temp = current;
                 }
 
                 if (check())
                     alert("puzzle complete!");
-            }            
+            }
         }
 
         function shuffle() {
             var times = Math.random() * 200;
             for (var c = 0; c < times; c++) {
-                var coordinates = [randint(3), randint(3)];
+                var coordinates = [randint(size), randint(size)];
                 var d = randint(2) + 1;
                 var dx = randint(2) * 2 - 1;
                 var dy = randint(2) * 2 - 1;
 
                 // move
                 var temp = cells[coordinates[0]][coordinates[1]].innerHTML;
-                for (var i = 0; i < d * 4; i++) {
-                    var current = cells[(coordinates[0] + dx * i + 15) % 3][(coordinates[1] + dy * i + 15) % 3].innerHTML;
-                    cells[(coordinates[0] + dx * i + 15) % 3][(coordinates[1] + dy * i + 15) % 3].innerHTML = temp;
+                for (var i = 0; i < d * (size + 1); i++) {
+                    var current = cells[(coordinates[0] + dx * i + size * size * 2) % size][(coordinates[1] + dy * i + size * size * 2) % size].innerHTML;
+                    cells[(coordinates[0] + dx * i + size * size * 2) % size][(coordinates[1] + dy * i + size * size * 2) % size].innerHTML = temp;
                     temp = current;
                 }
             }
         }
 
         function check() {
-            for (var i = 0; i < 3; i++) {
-                for (var j = 0; j < 3; j++) {
-                    if (cells[j][i].innerHTML != i * 3 + j + 1)
+            for (var i = 0; i < size; i++) {
+                for (var j = 0; j < size; j++) {
+                    if (cells[j][i].innerHTML != i * size + j + 1)
                         return false;
                 }
             }
             return true;
+        }
+
+        function createBoard(n) {
+            cellElement.hidden = false;
+            cellElement.style.width = cellElement.style.height = cellElement.style.lineHeight = [0, 0, 140, 120, 100, 85, 75, 65][n] + "px";
+            cellElement.style.fontSize = [0, 0, 140, 120, 100, 85, 75, 65][n] * 3.5 + "%";
+            table.innerHTML = "";
+            cells = [];
+            cellsTemp = [];
+            for (var i = 0; i < n; i++) {
+                var row = document.createElement("tr");
+                table.appendChild(row);
+                cells.push([]);
+
+                for (var j = 0; j < n; j++) {
+                    var cell = document.createElement("td");
+                    row.appendChild(cell);
+                    cell.appendChild(cellElement.cloneNode(true));
+                    cell.children[0].id = "c" + (i * n + j);
+                    cell.children[0].innerHTML = i * n + j + 1;
+
+                    cellsTemp.push(cell.children[0]);
+                }
+            }
+            cellElement.hidden = true;
+
+            for (var i = 0; i < n; i++) {
+                for (var j = 0; j < n; j++) {
+                    cells[j].push(document.getElementById("c" + (i * n + j)));
+                }
+            }
         }
 
         function randint(n) {
@@ -95,27 +130,12 @@
 </head>
 <body>
 
-    <label style="font-size:250%;margin-left:25%;"><b>DIAGONAL TORUS PUZZLE 3x3</b></label>
+    <label style="font-size:250%;margin-left:25%;"><b>DIAGONAL TORUS PUZZLE</b></label>
 
-    <table style="position:relative;top:40px;left:35%;">
-        <tr>
-            <td><div id="c0" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">1</div></td>
-            <td><div id="c1" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">2</div></td>
-            <td><div id="c2" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">3</div></td>
-        </tr>
-        <tr>
-            <td><div id="c3" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">4</div></td>
-            <td><div id="c4" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">5</div></td>
-            <td><div id="c5" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">6</div></td>
-        </tr>
-        <tr>
-            <td><div id="c6" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">7</div></td>
-            <td><div id="c7" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">8</div></td>
-            <td><div id="c8" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">9</div></td>
-        </tr>
-    </table>
+    <table id="table" style="position:relative;top:40px;left:35%;"></table>
 
-    <button style="font-size:150%;position:absolute;bottom:150px;left:40%;" onclick="shuffle();">shuffle</button>
+    <button style="font-size:150%;position:absolute;bottom:5%;left:5%;" onclick="shuffle();">shuffle</button>
+    <button style="font-size:150%;position:absolute;bottom:5%;left:20%;" onclick="if (size < 7) { size++; } else { size = 2; } createBoard(size);">change size</button>
 
     <script>
         start();
