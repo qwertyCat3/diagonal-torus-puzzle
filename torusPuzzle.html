@@ -1,0 +1,124 @@
+<html style="font-family:Arial">
+<head>
+    <title>diagonal torus puzzle</title>
+
+    <style>
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: lightgreen;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 100px;
+            font-size:300%;
+        }
+    </style>
+
+    <script>
+        var cells = [[], [], []];
+        function start() {
+            for (var i = 0; i < 3; i++) {
+                for (var j = 0; j < 3; j++) {
+                    cells[j].push(document.getElementById("c" + (i * 3 + j)));
+                }
+            }
+
+            shuffle();
+        }
+
+        function allowDrop(ev) {
+          ev.preventDefault();
+        }
+
+        function drag(ev) {
+          ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            var data = ev.dataTransfer.getData("text");
+
+            var id2 = ev.target.id;
+            var id1 = data;
+            var coordinate1 = [id1.replace("c", "") % 3, Math.floor(id1.replace("c", "") / 3)];
+            var coordinate2 = [id2.replace("c", "") % 3, Math.floor(id2.replace("c", "") / 3)];
+
+            if (Math.abs(coordinate1[0] - coordinate2[0]) == Math.abs(coordinate1[1] - coordinate2[1])) {
+                var dx = Math.sign(coordinate2[0] - coordinate1[0]);
+                var dy = Math.sign(coordinate2[1] - coordinate1[1]);
+                var d = Math.abs(coordinate2[0] - coordinate1[0])
+
+                var temp = cells[coordinate1[0]][coordinate1[1]].innerHTML;
+                for (var i = 0; i < d * 4; i++) {
+                    var current = cells[(coordinate1[0] + dx * i + 15) % 3][(coordinate1[1] + dy * i + 15) % 3].innerHTML;
+                    cells[(coordinate1[0] + dx * i + 15) % 3][(coordinate1[1] + dy * i + 15) % 3].innerHTML = temp;
+                    temp = current;
+                }
+
+                if (check())
+                    alert("puzzle complete!");
+            }            
+        }
+
+        function shuffle() {
+            var times = Math.random() * 200;
+            for (var c = 0; c < times; c++) {
+                var coordinates = [randint(3), randint(3)];
+                var d = randint(2) + 1;
+                var dx = randint(2) * 2 - 1;
+                var dy = randint(2) * 2 - 1;
+
+                // move
+                var temp = cells[coordinates[0]][coordinates[1]].innerHTML;
+                for (var i = 0; i < d * 4; i++) {
+                    var current = cells[(coordinates[0] + dx * i + 15) % 3][(coordinates[1] + dy * i + 15) % 3].innerHTML;
+                    cells[(coordinates[0] + dx * i + 15) % 3][(coordinates[1] + dy * i + 15) % 3].innerHTML = temp;
+                    temp = current;
+                }
+            }
+        }
+
+        function check() {
+            for (var i = 0; i < 3; i++) {
+                for (var j = 0; j < 3; j++) {
+                    if (cells[j][i].innerHTML != i * 3 + j + 1)
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        function randint(n) {
+            return Math.floor(Math.random() * n);
+        }
+    </script>
+</head>
+<body>
+
+    <label style="font-size:250%;margin-left:25%;"><b>DIAGONAL TORUS PUZZLE 3x3</b></label>
+
+    <table style="position:relative;top:40px;left:35%;">
+        <tr>
+            <td><div id="c0" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">1</div></td>
+            <td><div id="c1" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">2</div></td>
+            <td><div id="c2" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">3</div></td>
+        </tr>
+        <tr>
+            <td><div id="c3" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">4</div></td>
+            <td><div id="c4" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">5</div></td>
+            <td><div id="c5" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">6</div></td>
+        </tr>
+        <tr>
+            <td><div id="c6" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">7</div></td>
+            <td><div id="c7" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">8</div></td>
+            <td><div id="c8" class="cell" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)">9</div></td>
+        </tr>
+    </table>
+
+    <button style="font-size:150%;position:absolute;bottom:150px;left:40%;" onclick="shuffle();">shuffle</button>
+
+    <script>
+        start();
+    </script>
+</body>
+</html>
